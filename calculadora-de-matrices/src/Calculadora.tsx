@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { inv } from 'mathjs';  // Importamos la función de inversa desde mathjs
 import './Calculadora.css';
 
 function Calculadora() {
@@ -127,6 +128,15 @@ function Calculadora() {
     setResultMatrix(result);
   };
 
+  const invertMatrix = (matrix: number[][]) => {
+    try {
+      const invertedMatrix = inv(matrix); // Usamos la función inv de mathjs
+      setResultMatrix([invertedMatrix]);
+    } catch (error) {
+      alert("No se puede calcular la inversa de esta matriz. Asegúrate de que sea cuadrada y tenga un determinante distinto de 0.");
+    }
+  };
+
   return (
     <div>
       <h1>Calculadora de Matrices</h1>
@@ -167,6 +177,7 @@ function Calculadora() {
           />
         </label>
         <button onClick={handleResizeMatrix1}>Redimensionar Matriz 1</button>
+        <button onClick={() => invertMatrix(firstMatrix[0])}>Inversa Matriz 1</button> {/* Botón de inversa */}
       </div>
 
       <h2>Matriz 1</h2>
@@ -221,6 +232,7 @@ function Calculadora() {
           />
         </label>
         <button onClick={handleResizeMatrix2}>Redimensionar Matriz 2</button>
+        <button onClick={() => invertMatrix(secondMatrix[0])}>Inversa Matriz 2</button> {/* Botón de inversa */}
       </div>
 
       <h2>Matriz 2</h2>
@@ -257,6 +269,7 @@ function Calculadora() {
       ))}
 
       <div>
+        <h2>Operaciones</h2>
         <button onClick={addMatrices}>Sumar</button>
         <button onClick={subtractMatrices}>Restar</button>
         <button onClick={multiplyMatrices}>Multiplicar</button>
