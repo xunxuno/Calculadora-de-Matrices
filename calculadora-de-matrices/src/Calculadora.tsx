@@ -10,6 +10,8 @@ function Calculadora() {
     const [secondMatrixCols, setSecondMatrixCols] = useState(3);
     const [secondMatrix, setSecondMatrix] = useState(generateMatrix(3, 3));
 
+    const [resultMatrix, setResultMatrix] = useState<number[][]>([]); // Matriz de resultado
+
     // Función para generar una matriz de tamaño especificado
     function generateMatrix(rows: number, cols: number): number[][] {
         return Array.from({ length: rows }, () =>
@@ -41,6 +43,64 @@ function Calculadora() {
             r.map((c, colIndex) => (rowIndex === row && colIndex === col ? value : c))
         );
         setSecondMatrix(newMatrix);
+    };
+
+    // Función para realizar suma
+    const handleSum = () => {
+        if (firstMatrixRows === secondMatrixRows && firstMatrixCols === secondMatrixCols) {
+            const result = firstMatrix.map((row, rowIndex) =>
+                row.map((cell, colIndex) => cell + secondMatrix[rowIndex][colIndex])
+            );
+            setResultMatrix(result);
+        } else {
+            alert("Las matrices deben tener el mismo tamaño para sumar.");
+        }
+    };
+
+    // Función para realizar resta
+    const handleSubtract = () => {
+        if (firstMatrixRows === secondMatrixRows && firstMatrixCols === secondMatrixCols) {
+            const result = firstMatrix.map((row, rowIndex) =>
+                row.map((cell, colIndex) => cell - secondMatrix[rowIndex][colIndex])
+            );
+            setResultMatrix(result);
+        } else {
+            alert("Las matrices deben tener el mismo tamaño para restar.");
+        }
+    };
+
+    // Función para realizar multiplicación
+    const handleMultiply = () => {
+        if (firstMatrixCols === secondMatrixRows) {
+            const result = generateMatrix(firstMatrixRows, secondMatrixCols);
+            for (let i = 0; i < firstMatrixRows; i++) {
+                for (let j = 0; j < secondMatrixCols; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < firstMatrixCols; k++) {
+                        sum += firstMatrix[i][k] * secondMatrix[k][j];
+                    }
+                    result[i][j] = sum;
+                }
+            }
+            setResultMatrix(result);
+        } else {
+            alert("El número de columnas de la primera matriz debe coincidir con el número de filas de la segunda para multiplicar.");
+        }
+    };
+
+    // Función para realizar división (elemento a elemento)
+    const handleDivide = () => {
+        if (firstMatrixRows === secondMatrixRows && firstMatrixCols === secondMatrixCols) {
+            const result = firstMatrix.map((row, rowIndex) =>
+                row.map((cell, colIndex) => {
+                    const divisor = secondMatrix[rowIndex][colIndex];
+                    return divisor !== 0 ? cell / divisor : NaN;
+                })
+            );
+            setResultMatrix(result);
+        } else {
+            alert("Las matrices deben tener el mismo tamaño para dividir.");
+        }
     };
 
     return (
@@ -129,6 +189,35 @@ function Calculadora() {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Botones de operaciones */}
+            <div>
+                <h2>Operaciones</h2>
+                <button onClick={handleSum}>Suma</button>
+                <button onClick={handleSubtract}>Resta</button>
+                <button onClick={handleMultiply}>Multiplicación</button>
+                <button onClick={handleDivide}>División</button>
+            </div>
+
+            {/* Matriz de resultado */}
+            <div>
+                <h2>Resultado</h2>
+                {resultMatrix.length > 0 && (
+                    <table>
+                        <tbody>
+                            {resultMatrix.map((row, rowIndex) => (
+                                <tr key={rowIndex}>
+                                    {row.map((cell, colIndex) => (
+                                        <td key={colIndex}>
+                                            <input type="number" value={cell} readOnly />
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     );
