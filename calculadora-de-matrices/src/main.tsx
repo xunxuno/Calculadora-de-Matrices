@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDoom from 'react-dom/client'
+import Calculadora from './Calculadora'
 //import Calculadora from './Calculadora.tsx'
 
 
