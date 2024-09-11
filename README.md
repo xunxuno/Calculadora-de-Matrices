@@ -7,3 +7,4 @@ En este repositorio se encuentra el proyecto "Calculadora de Matrices" (unidimen
 
  De igual forma necesitarás instalar zod usando el comando: npm install zod, en tu terminal
 
+Si deseas usar las pruebas unitarias deberas tener instalado vitest
