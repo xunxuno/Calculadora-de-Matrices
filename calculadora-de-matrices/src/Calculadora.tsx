@@ -1,6 +1,57 @@
 import { useState } from "react";
 import { inv } from 'mathjs';
+import { z } from 'zod';
 import './Calculadora.css';
+
+// Esquema de Zod para validar la configuración de matrices
+const matrixSchema = z.object({
+  rows: z.number().min(1, "Las filas deben ser al menos 1").max(10, "Máximo 10 filas permitidas"),
+  cols: z.number().min(1, "Las columnas deben ser al menos 1").max(10, "Máximo 10 columnas permitidas"),
+  depth: z.number().optional(),
+  is3D: z.boolean().optional(),
+});
+
+type MatrixProps = {
+  matrix: number[][][],
+  updateCell: (
+    depthIndex: number,
+    rowIndex: number,
+    colIndex: number,
+    value: number
+  ) => void,
+  is3D: boolean,
+};
+
+const MatrixDisplay: React.FC<MatrixProps> = ({ matrix, updateCell, is3D }) => {
+  return (
+    <div>
+      {matrix.map((depth, depthIndex) => (
+        <div key={depthIndex}>
+          {is3D && <h3>Profundidad {depthIndex + 1}</h3>}
+          <table>
+            <tbody>
+              {depth.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, colIndex) => (
+                    <td key={colIndex}>
+                      <input
+                        type="number"
+                        value={cell}
+                        onChange={(e) =>
+                          updateCell(depthIndex, rowIndex, colIndex, Number(e.target.value))
+                        }
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 function Calculadora() {
   const [firstMatrix, setFirstMatrix] = useState<number[][][]>([[[0]]]);
@@ -31,20 +82,32 @@ function Calculadora() {
     setResultMatrix(null);
   };
 
-  const updateCell = (
-    matrixSetter: React.Dispatch<React.SetStateAction<number[][][]>>,
-    matrix: number[][][],
+  const updateCellFirstMatrix = (
     depthIndex: number,
     rowIndex: number,
     colIndex: number,
     value: number
   ) => {
-    const newMatrix = matrix.map((depth, d) =>
+    const newMatrix = firstMatrix.map((depth, d) =>
       depth.map((row, r) =>
         row.map((cell, c) => (d === depthIndex && r === rowIndex && c === colIndex ? value : cell))
       )
     );
-    matrixSetter(newMatrix);
+    setFirstMatrix(newMatrix);
+  };
+
+  const updateCellSecondMatrix = (
+    depthIndex: number,
+    rowIndex: number,
+    colIndex: number,
+    value: number
+  ) => {
+    const newMatrix = secondMatrix.map((depth, d) =>
+      depth.map((row, r) =>
+        row.map((cell, c) => (d === depthIndex && r === rowIndex && c === colIndex ? value : cell))
+      )
+    );
+    setSecondMatrix(newMatrix);
   };
 
   const checkDimensionsForAddition = () => {
@@ -130,31 +193,11 @@ function Calculadora() {
 
   const invertMatrix = (matrix: number[][]) => {
     try {
-      const invertedMatrix = inv(matrix); // Usamos la función inv de mathjs
+      const invertedMatrix = inv(matrix);
       setResultMatrix([invertedMatrix]);
     } catch (error) {
       alert("No se puede calcular la inversa de esta matriz. Asegúrate de que sea cuadrada y tenga un determinante distinto de 0.");
     }
-  };
-
-  const handleRowChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Math.max(Number(e.target.value), 1);
-    setRows1(value);
-  };
-
-  const handleColChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Math.max(Number(e.target.value), 1);
-    setCols1(value);
-  };
-
-  const handleRowChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Math.max(Number(e.target.value), 1);
-    setRows2(value);
-  };
-
-  const handleColChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Math.max(Number(e.target.value), 1);
-    setCols2(value);
   };
 
   return (
@@ -169,7 +212,7 @@ function Calculadora() {
             type="number"
             min="1"
             value={rows1}
-            onChange={handleRowChange1}
+            onChange={(e) => setRows1(Math.max(Number(e.target.value), 1))}
           />
         </label>
         <label>
@@ -178,7 +221,7 @@ function Calculadora() {
             type="number"
             min="1"
             value={cols1}
-            onChange={handleColChange1}
+            onChange={(e) => setCols1(Math.max(Number(e.target.value), 1))}
           />
         </label>
         <label>
@@ -203,38 +246,11 @@ function Calculadora() {
       </div>
 
       <h2>Matriz 1</h2>
-      {firstMatrix.map((depth, depthIndex) => (
-        <div key={depthIndex}>
-          {/* Mostrar el encabezado "Profundidad" solo si is3D es true */}
-          {is3D && <h3>Profundidad {depthIndex + 1}</h3>}
-          <table>
-            <tbody>
-              {depth.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {row.map((cell, colIndex) => (
-                    <td key={colIndex}>
-                      <input
-                        type="number"
-                        value={cell}
-                        onChange={(e) =>
-                          updateCell(
-                            setFirstMatrix,
-                            firstMatrix,
-                            depthIndex,
-                            rowIndex,
-                            colIndex,
-                            Number(e.target.value)
-                          )
-                        }
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
+      <MatrixDisplay
+        matrix={firstMatrix}
+        updateCell={updateCellFirstMatrix}
+        is3D={is3D}
+      />
 
       <div>
         <h2>Configurar Matriz 2</h2>
@@ -244,7 +260,7 @@ function Calculadora() {
             type="number"
             min="1"
             value={rows2}
-            onChange={handleRowChange2}
+            onChange={(e) => setRows2(Math.max(Number(e.target.value), 1))}
           />
         </label>
         <label>
@@ -253,7 +269,7 @@ function Calculadora() {
             type="number"
             min="1"
             value={cols2}
-            onChange={handleColChange2}
+            onChange={(e) => setCols2(Math.max(Number(e.target.value), 1))}
           />
         </label>
         <button onClick={handleResizeMatrix2}>Redimensionar Matriz 2</button>
@@ -261,38 +277,11 @@ function Calculadora() {
       </div>
 
       <h2>Matriz 2</h2>
-      {secondMatrix.map((depth, depthIndex) => (
-        <div key={depthIndex}>
-          {/* Mostrar el encabezado "Profundidad" solo si is3D es true */}
-          {is3D && <h3>Profundidad {depthIndex + 1}</h3>}
-          <table>
-            <tbody>
-              {depth.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {row.map((cell, colIndex) => (
-                    <td key={colIndex}>
-                      <input
-                        type="number"
-                        value={cell}
-                        onChange={(e) =>
-                          updateCell(
-                            setSecondMatrix,
-                            secondMatrix,
-                            depthIndex,
-                            rowIndex,
-                            colIndex,
-                            Number(e.target.value)
-                          )
-                        }
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
+      <MatrixDisplay
+        matrix={secondMatrix}
+        updateCell={updateCellSecondMatrix}
+        is3D={is3D}
+      />
 
       <div>
         <h2>Operaciones</h2>
@@ -305,22 +294,7 @@ function Calculadora() {
       {resultMatrix && (
         <div>
           <h2>Resultado</h2>
-          {resultMatrix.map((depth, depthIndex) => (
-            <div key={depthIndex}>
-              {is3D && <h3>Profundidad {depthIndex + 1}</h3>}
-              <table>
-                <tbody>
-                  {depth.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {row.map((cell, colIndex) => (
-                        <td key={colIndex}>{cell}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))}
+          <MatrixDisplay matrix={resultMatrix} updateCell={() => {}} is3D={is3D} />
         </div>
       )}
     </div>
