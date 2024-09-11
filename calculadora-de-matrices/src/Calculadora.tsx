@@ -336,3 +336,4 @@ function Calculadora() {
 }
 
 export default Calculadora;
+export { MatrixDisplay };
