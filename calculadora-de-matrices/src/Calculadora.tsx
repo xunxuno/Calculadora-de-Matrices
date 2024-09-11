@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { inv } from 'mathjs';  // Importamos la función de inversa desde mathjs
+import { inv } from 'mathjs';
 import './Calculadora.css';
 
 function Calculadora() {
@@ -10,7 +10,7 @@ function Calculadora() {
   const [rows2, setRows2] = useState(3);
   const [cols2, setCols2] = useState(3);
   const [depth, setDepth] = useState(2);
-  const [is3D, setIs3D] = useState(false); // Para cambiar entre 2D y 3D
+  const [is3D, setIs3D] = useState(false);
   const [resultMatrix, setResultMatrix] = useState<number[][][] | null>(null);
 
   function generateMatrix(rows: number, cols: number, depth: number = 1): number[][][] {
@@ -23,12 +23,12 @@ function Calculadora() {
 
   const handleResizeMatrix1 = () => {
     setFirstMatrix(generateMatrix(rows1, cols1, is3D ? depth : 1));
-    setResultMatrix(null); // Reiniciar el resultado cuando se redimensiona la matriz
+    setResultMatrix(null);
   };
 
   const handleResizeMatrix2 = () => {
     setSecondMatrix(generateMatrix(rows2, cols2, is3D ? depth : 1));
-    setResultMatrix(null); // Reiniciar el resultado cuando se redimensiona la matriz
+    setResultMatrix(null);
   };
 
   const updateCell = (
@@ -137,6 +137,26 @@ function Calculadora() {
     }
   };
 
+  const handleRowChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.max(Number(e.target.value), 1);
+    setRows1(value);
+  };
+
+  const handleColChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.max(Number(e.target.value), 1);
+    setCols1(value);
+  };
+
+  const handleRowChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.max(Number(e.target.value), 1);
+    setRows2(value);
+  };
+
+  const handleColChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.max(Number(e.target.value), 1);
+    setCols2(value);
+  };
+
   return (
     <div>
       <h1>Calculadora de Matrices</h1>
@@ -147,16 +167,18 @@ function Calculadora() {
           Filas:
           <input
             type="number"
+            min="1"
             value={rows1}
-            onChange={(e) => setRows1(Number(e.target.value))}
+            onChange={handleRowChange1}
           />
         </label>
         <label>
           Columnas:
           <input
             type="number"
+            min="1"
             value={cols1}
-            onChange={(e) => setCols1(Number(e.target.value))}
+            onChange={handleColChange1}
           />
         </label>
         <label>
@@ -164,7 +186,7 @@ function Calculadora() {
           <input
             type="number"
             value={depth}
-            onChange={(e) => setDepth(Number(e.target.value))}
+            onChange={(e) => setDepth(Math.max(Number(e.target.value), 1))}
             disabled={!is3D}
           />
         </label>
@@ -177,13 +199,14 @@ function Calculadora() {
           />
         </label>
         <button onClick={handleResizeMatrix1}>Redimensionar Matriz 1</button>
-        <button onClick={() => invertMatrix(firstMatrix[0])}>Inversa Matriz 1</button> {/* Botón de inversa */}
+        <button onClick={() => invertMatrix(firstMatrix[0])}>Inversa Matriz 1</button>
       </div>
 
       <h2>Matriz 1</h2>
       {firstMatrix.map((depth, depthIndex) => (
         <div key={depthIndex}>
-          <h3>Profundidad {depthIndex + 1}</h3>
+          {/* Mostrar el encabezado "Profundidad" solo si is3D es true */}
+          {is3D && <h3>Profundidad {depthIndex + 1}</h3>}
           <table>
             <tbody>
               {depth.map((row, rowIndex) => (
@@ -219,26 +242,29 @@ function Calculadora() {
           Filas:
           <input
             type="number"
+            min="1"
             value={rows2}
-            onChange={(e) => setRows2(Number(e.target.value))}
+            onChange={handleRowChange2}
           />
         </label>
         <label>
           Columnas:
           <input
             type="number"
+            min="1"
             value={cols2}
-            onChange={(e) => setCols2(Number(e.target.value))}
+            onChange={handleColChange2}
           />
         </label>
         <button onClick={handleResizeMatrix2}>Redimensionar Matriz 2</button>
-        <button onClick={() => invertMatrix(secondMatrix[0])}>Inversa Matriz 2</button> {/* Botón de inversa */}
+        <button onClick={() => invertMatrix(secondMatrix[0])}>Inversa Matriz 2</button>
       </div>
 
       <h2>Matriz 2</h2>
       {secondMatrix.map((depth, depthIndex) => (
         <div key={depthIndex}>
-          <h3>Profundidad {depthIndex + 1}</h3>
+          {/* Mostrar el encabezado "Profundidad" solo si is3D es true */}
+          {is3D && <h3>Profundidad {depthIndex + 1}</h3>}
           <table>
             <tbody>
               {depth.map((row, rowIndex) => (
@@ -281,7 +307,7 @@ function Calculadora() {
           <h2>Resultado</h2>
           {resultMatrix.map((depth, depthIndex) => (
             <div key={depthIndex}>
-              <h3>Profundidad {depthIndex + 1}</h3>
+              {is3D && <h3>Profundidad {depthIndex + 1}</h3>}
               <table>
                 <tbody>
                   {depth.map((row, rowIndex) => (
