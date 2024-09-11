@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { inv } from 'mathjs';
 import { z } from 'zod';
 import './Calculadora.css';
@@ -20,11 +20,13 @@ type MatrixProps = {
     value: number
   ) => void,
   is3D: boolean,
+  children?: ReactNode
 };
 
-const MatrixDisplay: React.FC<MatrixProps> = ({ matrix, updateCell, is3D }) => {
+const MatrixDisplay: React.FC<MatrixProps> = ({ matrix, updateCell, is3D, children }) => {
   return (
     <div>
+      {children}
       {matrix.map((depth, depthIndex) => (
         <div key={depthIndex}>
           {is3D && <h3>Profundidad {depthIndex + 1}</h3>}
@@ -64,6 +66,7 @@ function Calculadora() {
   const [is3D, setIs3D] = useState(false);
   const [resultMatrix, setResultMatrix] = useState<number[][][] | null>(null);
 
+  // Generar matriz
   function generateMatrix(rows: number, cols: number, depth: number = 1): number[][][] {
     return Array.from({ length: depth }, () =>
       Array.from({ length: rows }, () =>
@@ -72,16 +75,39 @@ function Calculadora() {
     );
   }
 
-  const handleResizeMatrix1 = () => {
-    setFirstMatrix(generateMatrix(rows1, cols1, is3D ? depth : 1));
-    setResultMatrix(null);
+  // Validación de la configuración de las matrices usando Zod
+  const validateMatrixConfig = (rows: number, cols: number, depth: number, is3D: boolean) => {
+    const validationResult = matrixSchema.safeParse({
+      rows,
+      cols,
+      depth: is3D ? depth : undefined,
+      is3D,
+    });
+
+    if (!validationResult.success) {
+      alert(validationResult.error.errors.map((error) => error.message).join("\n"));
+      return false;
+    }
+    return true;
   };
 
-  const handleResizeMatrix2 = () => {
-    setSecondMatrix(generateMatrix(rows2, cols2, is3D ? depth : 1));
-    setResultMatrix(null);
-  };
+  // useEffect para redimensionar automáticamente la Matriz 1
+  useEffect(() => {
+    if (validateMatrixConfig(rows1, cols1, depth, is3D)) {
+      setFirstMatrix(generateMatrix(rows1, cols1, is3D ? depth : 1));
+      setResultMatrix(null);
+    }
+  }, [rows1, cols1, depth, is3D]);
 
+  // useEffect para redimensionar automáticamente la Matriz 2
+  useEffect(() => {
+    if (validateMatrixConfig(rows2, cols2, depth, is3D)) {
+      setSecondMatrix(generateMatrix(rows2, cols2, is3D ? depth : 1));
+      setResultMatrix(null);
+    }
+  }, [rows2, cols2, depth, is3D]);
+
+  // Funciones de actualización de celdas
   const updateCellFirstMatrix = (
     depthIndex: number,
     rowIndex: number,
@@ -110,6 +136,7 @@ function Calculadora() {
     setSecondMatrix(newMatrix);
   };
 
+  // Funciones de operaciones entre matrices
   const checkDimensionsForAddition = () => {
     return (
       firstMatrix.length === secondMatrix.length &&
@@ -241,7 +268,6 @@ function Calculadora() {
             onChange={() => setIs3D(!is3D)}
           />
         </label>
-        <button onClick={handleResizeMatrix1}>Redimensionar Matriz 1</button>
         <button onClick={() => invertMatrix(firstMatrix[0])}>Inversa Matriz 1</button>
       </div>
 
@@ -250,7 +276,9 @@ function Calculadora() {
         matrix={firstMatrix}
         updateCell={updateCellFirstMatrix}
         is3D={is3D}
-      />
+      >
+        <h3>Contenido Adicional para Matriz 1</h3>
+      </MatrixDisplay>
 
       <div>
         <h2>Configurar Matriz 2</h2>
@@ -272,7 +300,6 @@ function Calculadora() {
             onChange={(e) => setCols2(Math.max(Number(e.target.value), 1))}
           />
         </label>
-        <button onClick={handleResizeMatrix2}>Redimensionar Matriz 2</button>
         <button onClick={() => invertMatrix(secondMatrix[0])}>Inversa Matriz 2</button>
       </div>
 
@@ -281,7 +308,9 @@ function Calculadora() {
         matrix={secondMatrix}
         updateCell={updateCellSecondMatrix}
         is3D={is3D}
-      />
+      >
+        <h3>Contenido Adicional para Matriz 2</h3>
+      </MatrixDisplay>
 
       <div>
         <h2>Operaciones</h2>
