@@ -163,6 +163,7 @@ function Calculadora() {
         )
       )
     );
+    console.log("Resultado de la suma:", result); // Imprime el resultado en la consola
     setResultMatrix(result);
   };
 
@@ -178,6 +179,7 @@ function Calculadora() {
         )
       )
     );
+    console.log("Resultado de la resta:", result); // Imprime el resultado en la consola
     setResultMatrix(result);
   };
 
@@ -198,6 +200,7 @@ function Calculadora() {
         })
       )
     );
+    console.log("Resultado de la multiplicación:", result); // Imprime el resultado en la consola
     setResultMatrix(result);
   };
 
@@ -215,12 +218,14 @@ function Calculadora() {
         )
       )
     );
+    console.log("Resultado de la división:", result); // Imprime el resultado en la consola
     setResultMatrix(result);
   };
 
   const invertMatrix = (matrix: number[][]) => {
     try {
       const invertedMatrix = inv(matrix);
+      console.log("Resultado de la inversa:", invertedMatrix); // Imprime el resultado en la consola
       setResultMatrix([invertedMatrix]);
     } catch (error) {
       alert("No se puede calcular la inversa de esta matriz. Asegúrate de que sea cuadrada y tenga un determinante distinto de 0.");
